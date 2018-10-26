@@ -15,6 +15,7 @@ import Saleslist from "./Saleslist";
 import { withStyles, css } from "react-with-styles";
 const SHOPNAMES = require("../../data/shopnames");
 
+let total = 0;
 const today = moment();
 const yesterday = moment().subtract(1, "day");
 const presets = [
@@ -65,6 +66,7 @@ class Reports extends Component {
 
   componentDidUpdate(nextProps) {
     let salelist = {};
+
     if (nextProps.salestats) {
       let stats = nextProps.salestats;
       stats.map(daydetails => {
