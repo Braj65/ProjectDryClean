@@ -15,7 +15,6 @@ import Saleslist from "./Saleslist";
 import { withStyles, css } from "react-with-styles";
 const SHOPNAMES = require("../../data/shopnames");
 
-let total;
 const today = moment();
 const yesterday = moment().subtract(1, "day");
 const presets = [
@@ -46,7 +45,8 @@ const presets = [
     end: today.endOf("day")
   }
 ];
-
+let map = new Map();
+// let shops = [];
 class Reports extends Component {
   constructor() {
     super();
@@ -63,32 +63,49 @@ class Reports extends Component {
     this.onDatesChange = this.onDatesChange.bind(this);
   }
 
-  componentWillReceiveProps(nextProps) {
-    let salelist = [];
-    let map = new Map();
+  componentDidUpdate(nextProps) {
+    let salelist = {};
     if (nextProps.salestats) {
       let stats = nextProps.salestats;
       stats.map(daydetails => {
         let date = moment(daydetails.date).format("DD/MMM/YYYY");
-        console.log("&&&&&&&&&&&&&&&&&&&&&& ", date);
         if (map.has(date)) {
-          let salelistclone = map.get(date).slice(0);
-          console.log("^^^^^^^^^^^^^^^^ ", JSON.stringify(salelistclone));
-        } else {
           daydetails.orderids.map(orderid => {
             total = total + Math.trunc(orderid.totalprice);
           });
+          console.log("&&&&&&&&&&&&&&&&&&&&&& ", daydetails.shopid);
+          console.log("&&&&&&&&&&&&&&&&&&&&&& ", total);
+          salelist = map.get(date);
           salelist[daydetails.shopid] = total;
           map.set(date, salelist);
-          console.log("&&&&&&&&&&&&&&&&&&&&&& ", JSON.stringify(salelist));
+          for (const [key, value] of map) {
+            console.log(`key:${key}, value:${value}`);
+            const totaldetails = value;
+            Object.keys(totaldetails).map(totskey => {
+              console.log(totskey);
+              console.log(totaldetails[totskey]);
+            });
+          }
+        } else {
+          salelist = {};
+          daydetails.orderids.map(orderid => {
+            total = total + Math.trunc(orderid.totalprice);
+          });
+          console.log("&&&&&&&&&&&&&&&&&&&&&& ", daydetails.shopid);
+          console.log("&&&&&&&&&&&&&&&&&&&&&& ", total);
+          salelist[daydetails.shopid] = total;
+          map.set(date, salelist);
+          for (const [key, value] of map) {
+            console.log(`key:${key}, value:${value}`);
+          }
         }
-        /* salelist.push({ saleid: new Date().getTime() });
-        salelist.push({ shopid: daydetails.shopid });
-        salelist.push({ date: daydetails.date });
-        daydetails.orderids.map(orderid => {
-          total = total + Math.trunc(orderid.totalprice);
-        });
-        salelist.push({ push: daydetails.date }); */
+        total = 0;
+        /* for (const [key, value] of map) {
+          const totaldetails = value;
+          Object.keys(totaldetails).map(totskey => {
+            shops.push(totskey);
+          });
+        } */
       });
     }
   }
@@ -202,6 +219,7 @@ class Reports extends Component {
         />
         <button onClick={this.onfetch}>Fetch</button>
         <div>{salestats ? salestats[0].shopid : null}</div>
+        {salestats ? <Saleslist map={map} /> : null}
       </Tux>
     );
   }
